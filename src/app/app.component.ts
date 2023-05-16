@@ -27,6 +27,11 @@ export class AppComponent implements OnInit {
     //this.map.getCanvasContainer().appendChild(select);
   }
 
+  //Please create a file and set like below:
+  //export const environment = {
+  //  production: true,
+  //  mapboxAccessToken: 'YOUR_TOKEN'
+  //};
   createMap() {
     this.map = new mapboxgl.Map({
       accessToken: environment.mapboxAccessToken,
