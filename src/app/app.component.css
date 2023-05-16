@@ -1,0 +1,32 @@
+#map {
+    position: relative;
+    z-index: 1;
+}
+
+#language-selector {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+}
+
+#first_title {
+    font-weight: bold;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-container p {
+    margin-right: 10px;
+}
+
+.logo {
+    width: 85px;
+    /* Adjust the width as needed */
+    height: auto;
+    /* Maintain aspect ratio */
+}
+
