@@ -2,6 +2,10 @@ import { Component, Renderer2, OnInit } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from './environment.prod';
 import * as geo from './GeoJsonUtils';
+import { ThreejsLayer } from './threejs.layer';
+
+const THREE = (window as any)['THREE'];
+const Threebox = (window as any)['Threebox'];
 
 //call javacript, threebox's typescript support is not good(or I am stupid) so I build 3D layer in JS
 declare function addStart3DModel(mapbox: mapboxgl.Map): void;
@@ -15,8 +19,8 @@ declare function add3D(mapbox: mapboxgl.Map): void;
 export class AppComponent implements OnInit {
 
   private map!: mapboxgl.Map;
-
-  constructor(private renderer: Renderer2, private geojsonService: geo.GeoJsonUtils) {
+  private var_tb: any;
+  constructor(private geojsonService: geo.GeoJsonUtils) {
 
   }
 
@@ -40,7 +44,7 @@ export class AppComponent implements OnInit {
       container: 'map', // container ID
       // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
       style: 'mapbox://styles/mapbox/streets-v12', // style URL
-      center: [141.396, 38.4844], // starting position [lng, lat]
+      center: [141.29421,38.4506], // starting position [lng, lat]
       zoom: 11, // starting zoom
       attributionControl: true,
       antialias: true
@@ -53,9 +57,7 @@ export class AppComponent implements OnInit {
       this.addTerrainButton();
       this.addRouterButton();
       //this.addStart3DIcon();
-      //add3D(this.map);
-      //this.myScriptRef.nativeElement.
-
+      this.add3DStartModel();
     });
   }
 
@@ -211,6 +213,16 @@ export class AppComponent implements OnInit {
     */
   }
 
+  add3DStartModel() {
+    var start: [number, number]  =[141.29421,38.4506];
+    const layer_3d = new ThreejsLayer(
+      this.map,
+      start,
+      'https://docs.mapbox.com/mapbox-gl-js/assets/metlife-building.gltf'
+    );
+    this.map.addLayer(layer_3d.customLayer,'waterway-label')
+
+  }
 
 
 }

@@ -27,8 +27,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [
-              "src/assets/js/threebox.js"            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -90,9 +89,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [
-              "src/assets/js/threebox.js"
-            ]
+            "scripts": []
           }
         }
       }
