@@ -28,8 +28,6 @@ export class GeoJsonUtils {
         console.log(lineString);
 
       });
-
-
   }
 
   static async getlineString(map: mapboxgl.Map): Promise<any> {

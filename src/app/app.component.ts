@@ -1,10 +1,11 @@
 import { Component, Renderer2, OnInit } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from './environment.prod';
+import * as geo from './GeoJsonUtils';
 
-import * as geo from './GeoJsonUtils'
-import { lineString } from '@turf/turf';
-
+//call javacript, threebox's typescript support is not good(or I am stupid) so I build 3D layer in JS
+declare function addStart3DModel(mapbox: mapboxgl.Map): void;
+declare function add3D(mapbox: mapboxgl.Map): void;
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import { lineString } from '@turf/turf';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+
   private map!: mapboxgl.Map;
 
   constructor(private renderer: Renderer2, private geojsonService: geo.GeoJsonUtils) {
@@ -40,20 +42,26 @@ export class AppComponent implements OnInit {
       style: 'mapbox://styles/mapbox/streets-v12', // style URL
       center: [141.396, 38.4844], // starting position [lng, lat]
       zoom: 11, // starting zoom
-      attributionControl: true
+      attributionControl: true,
+      antialias: true
     });
+
 
     this.map.on('load', () => {
       console.log('Map loaded');
       this.addLanguageSelector();
       this.addTerrainButton();
       this.addRouterButton();
+      //this.addStart3DIcon();
+      //add3D(this.map);
+      //this.myScriptRef.nativeElement.
+
     });
   }
 
   addLanguageSelector() {
     // Add language selector
-    const languageSelector = document.querySelector('#language-selector select') as HTMLSelectElement;
+    const languageSelector = document.getElementById('select-language') as HTMLSelectElement;
     languageSelector.addEventListener('change', (event) => {
 
       const language = (event.target as HTMLSelectElement).value;
@@ -75,38 +83,16 @@ export class AppComponent implements OnInit {
   }
 
   addTerrainButton() {
-    const button = this.renderer.createElement('button');
-    const text = this.renderer.createText('Terrain switch');
-    this.renderer.appendChild(button, text);
-    this.renderer.appendChild(document.body, button);
-    // set button position
-    this.renderer.setStyle(button, 'position', 'absolute');
-    this.renderer.setStyle(button, 'top', '10%');
-    this.renderer.setStyle(button, 'left', '10px');
-    //this.renderer.setStyle(button, 'transform', 'translate(-50%, -50%)');
-    this.renderer.setStyle(button, 'z-index', '1');
-
-    // add click event listener to button
-    this.renderer.listen(button, 'click', () => {
+    const terrainSwitch = document.getElementById('Terrain') as HTMLSelectElement;
+    terrainSwitch.addEventListener('click', (event) => {
       this.addTerrainLayer();
     });
   }
 
   addRouterButton() {
-    const button = this.renderer.createElement('button');
-    const text = this.renderer.createText('Show router');
-    this.renderer.appendChild(button, text);
-    this.renderer.appendChild(document.body, button);
-    // set button position
-    this.renderer.setStyle(button, 'position', 'absolute');
-    this.renderer.setStyle(button, 'top', '20%');
-    this.renderer.setStyle(button, 'left', '10px');
-    //this.renderer.setStyle(button, 'transform', 'translate(-50%, -50%)');
-    this.renderer.setStyle(button, 'z-index', '1');
-
-    // add click event listener to button
-    this.renderer.listen(button, 'click', () => {
-      this.addRouter();
+    const routerSwitch = document.getElementById('Router') as HTMLSelectElement;
+    routerSwitch.addEventListener('click', (event) => {
+      this.addAllRouters();
     });
   }
 
@@ -118,6 +104,11 @@ export class AppComponent implements OnInit {
         this.map.setTerrain(null);
         this.map.removeSource("mapbox-dem")
         console.log('Terrain layer removed!');
+        this.map.easeTo({
+          pitch: 0, // Set the target pitch value
+          duration: 1000, // Set the duration of the animation in milliseconds
+          // Use linear easing for a constant speed animation
+        });
       } else {
         console.log('add Terrain!');
         this.map.addSource('mapbox-dem', {
@@ -128,13 +119,41 @@ export class AppComponent implements OnInit {
         });
         // add the DEM source as a terrain layer with exaggerated height
         this.map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 2.5 });
+        this.map.easeTo({
+          pitch: 45, // Set the target pitch value
+          duration: 1000, // Set the duration of the animation in milliseconds
+          // Use linear easing for a constant speed animation
+        });
       }
     }
   }
 
+  addAllRouters() {
+    const sourceFiles = ['TdT2023-065.geojson', 'TdT2023-100.geojson', 'TdT2023-150.geojson', 'TdT2023-210.geojson'];
+    const colors = ['#d1ed77', '#63b809', '#3f44cc', '#cc1d80'];
+    const width = [4, 3, 2, 1];
+    sourceFiles.forEach((filePath, index) => {
+      this.map.addSource(`geojson-source-${index}`, {
+        type: 'geojson',
+        data: `assets/routerGeojson/${filePath}`, // Replace with the path to your GeoJSON file
+      });
+
+      this.map.addLayer({
+        id: `geojson-layer-${index}`,
+        type: 'line',
+        source: `geojson-source-${index}`,
+        paint: {
+          'line-color': colors[index], // Set the line color to green
+          'line-width': 5, // Set the line width
+          'line-blur': 1,
+          'line-opacity': 0.5,
+          'line-offset': index * 2,
+        },
+      });
+    });
+  }
+
   addRouter() {
-   
-    
     geo.GeoJsonUtils.getlineString(this.map)
       .then(lineString => {
         this.map.addSource('router-point', {
@@ -153,7 +172,7 @@ export class AppComponent implements OnInit {
           },
           'paint': {
             'line-color': '#888',
-            'line-width': 8
+            'line-width': 8,
           }
         });
 
@@ -161,35 +180,41 @@ export class AppComponent implements OnInit {
       .catch(error => {
         console.error(error);
       });
-      
-      /*
-      geo.GeoJsonUtils.getlineStringWithElevation(this.map)
-      .then(lineString => {
-        this.map.addSource('router-point', {
-          type: 'geojson',
-          // Use a URL for the value for the `data` property.
-          data: lineString
-        });
 
-        this.map.addLayer({
-          'id': 'router-layer',
-          'type': 'line',
-          'source': 'router-point',
-          'layout': {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          'paint': {
-            'line-color': '#888',
-            'line-width': 8
-          }
-        });
-
-      })
-      .catch(error => {
-        console.error(error);
+    /*
+    geo.GeoJsonUtils.getlineStringWithElevation(this.map)
+    .then(lineString => {
+      this.map.addSource('router-point', {
+        type: 'geojson',
+        // Use a URL for the value for the `data` property.
+        data: lineString
       });
-      */
+
+      this.map.addLayer({
+        'id': 'router-layer',
+        'type': 'line',
+        'source': 'router-point',
+        'layout': {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        'paint': {
+          'line-color': '#888',
+          'line-width': 8
+        }
+      });
+
+    })
+    .catch(error => {
+      console.error(error);
+    });
+    */
   }
+
+
+
 }
+
+
+
 
