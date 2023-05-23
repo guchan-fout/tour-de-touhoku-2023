@@ -3,23 +3,19 @@ import * as mapboxgl from 'mapbox-gl';
 import { environment } from './environment.prod';
 import * as geo from './GeoJsonUtils';
 import { ThreejsLayer } from './threejs.layer';
-
-const THREE = (window as any)['THREE'];
-const Threebox = (window as any)['Threebox'];
-
-//call javacript, threebox's typescript support is not good(or I am stupid) so I build 3D layer in JS
-declare function addStart3DModel(mapbox: mapboxgl.Map): void;
-declare function add3D(mapbox: mapboxgl.Map): void;
+import { MapService} from './app.map'
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css','./css/rider-icon.css']
 })
 export class AppComponent implements OnInit {
 
   private map!: mapboxgl.Map;
-  private var_tb: any;
+  mapService!: MapService
+
+
   constructor(private geojsonService: geo.GeoJsonUtils) {
 
   }
@@ -45,10 +41,14 @@ export class AppComponent implements OnInit {
       // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
       style: 'mapbox://styles/mapbox/streets-v12', // style URL
       center: [141.29421,38.4506], // starting position [lng, lat]
-      zoom: 11, // starting zoom
+      zoom: 18, // starting zoom
       attributionControl: true,
       antialias: true
     });
+
+    const nav = new mapboxgl.NavigationControl();
+    this.map.addControl(nav, 'top-right');
+
 
 
     this.map.on('load', () => {
@@ -58,6 +58,12 @@ export class AppComponent implements OnInit {
       this.addRouterButton();
       //this.addStart3DIcon();
       this.add3DStartModel();
+
+      this.mapService = new MapService(this.map);
+      var start = new mapboxgl.LngLat(141.29347,38.4504499);
+      this.mapService.addRiderMarkerTo(start);
+      //this.mapService.addAllMarkers();
+ 
     });
   }
 
@@ -220,7 +226,7 @@ export class AppComponent implements OnInit {
       start,
       'https://docs.mapbox.com/mapbox-gl-js/assets/metlife-building.gltf'
     );
-    this.map.addLayer(layer_3d.customLayer,'waterway-label')
+    this.map.addLayer(layer_3d.customLayer)
 
   }
 

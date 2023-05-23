@@ -18,7 +18,7 @@ export class ThreejsLayer {
     //   23.781372557061157, 37.988260208268386,
     // ] as mapboxgl.LngLatLike; // define explicitly to match MercatorCoordinate types
     console.log("make 3d")
-    const modelAltitude = 0;
+    const modelAltitude = 20;
     const modelRotate = [Math.PI / 2, 0, 0];
     // const modelRotate = [Math.PI / 2, (3 * Math.PI) / 2, 0];
 
@@ -27,7 +27,7 @@ export class ThreejsLayer {
       modelAltitude
     );
 
-    // const modelScale = 2e-8;
+    //const modelScale = 3.2;
 
     const modelTransform = {
       // translateX: MercatorCoordinate.fromLngLat(this.modelOrigin, modelAltitude)

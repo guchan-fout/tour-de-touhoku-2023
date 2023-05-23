@@ -1,15 +1,3 @@
-#map {
-    position: relative;
-    z-index: 1;
-}
-
-#language-selector {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-}
-
 #first_title {
     font-weight: bold;
 }
@@ -35,4 +23,5 @@
     gap: 10px;
   }
 
+  
 
